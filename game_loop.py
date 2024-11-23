@@ -59,5 +59,7 @@ class GameLoop:
 
             
 
+            print(self.obstaculos.check_collision(self.jogador.player))
+
             pygame.display.flip()
             self.clock.tick(60)
