@@ -59,7 +59,5 @@ class GameLoop:
 
             self.obstaculos.draw_time_bar(self.screen, start_ticks, total_time, 50, 20, self.size, 10)
 
-            print(self.obstaculos.check_collision())
-
             pygame.display.flip()
             self.clock.tick(60)
