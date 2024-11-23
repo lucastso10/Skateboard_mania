@@ -1,6 +1,11 @@
 import pygame
 import random
 
+class ColisionType:
+    NONE = 0
+    GREEN = 1
+    RED = 2
+
 class Obstaculo:
     def __init__(self):
         self.rects = []
@@ -41,13 +46,13 @@ class Obstaculo:
             color = (0,255,0) if side == "Direita" else (255,0,0)
             pygame.draw.rect(surface, color, rect)
 
-    def check_collision(self, ball_x, ball_y):
-        for rect, side in self.rects:
-            if side == "left" and ball_x < rect.right:
-                return False  # A bola está no lado errado
-            elif side == "right" and ball_x > rect.left:
-                return False  # A bola está no lado errado
-        return True
+    def check_collision(self, player):
+        for rect in self.rects:
+            if player.colliderect(rect):
+                return ColisionType.RED
+        
+        return ColisionType.NONE
+        
     
     def draw_time_bar(self, surface, start_ticks, total_time, x, y, width, height ):
     # Calcular o tempo restante
