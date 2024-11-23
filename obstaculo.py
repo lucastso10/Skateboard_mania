@@ -9,16 +9,16 @@ class Obstaculo:
         self.ultimoRect = pygame.time.get_ticks()
         self.lifespan = 3000
     
-    def spawn(self, quadrado):
-        #limites do quadrado
-        x_min, y_min = quadrado.x, quadrado.y
-        x_max, y_max = quadrado.x + quadrado.size, quadrado.y + quadrado.size
+    def spawn(self, arena):
+        #limites da arena
+        x_min, y_min = arena.arena.x, arena.arena.y
+        x_max, y_max = arena.arena.x + arena.arena.size[0], arena.arena.y + arena.arena.size[1]
 
         # Tamanho do retângulo
         rect_width = 10
-        rect_height = quadrado.size
+        rect_height = arena.arena.size[1]
 
-        # Posição aleatória dentro do quadrado
+        # Posição aleatória dentro da arena
         rect_x = random.randint(x_min, x_max - rect_width)
         rect_y = random.randint(y_min, y_max - rect_height)
 
@@ -27,11 +27,11 @@ class Obstaculo:
         self.rects.append((pygame.Rect(rect_x, rect_y, rect_width, rect_height), side))
 
 
-    def update(self, quadrado):
+    def update(self, arena):
         # Adiciona novos retângulos periodicamente
         now = pygame.time.get_ticks()
         if now - self.ultimoRect > self.frequencia:
-            self.spawn(quadrado)
+            self.spawn(arena)
             self.ultimoRect = now
 
         

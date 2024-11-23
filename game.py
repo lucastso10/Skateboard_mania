@@ -11,10 +11,10 @@ class Difficulty:
 # Adicionar todos os minigames aqui
 class Minigames:
     DODGE = 0
-    JUMP = 1
+    BALANCE = 1
 
     def all():
-        return [Minigames.DODGE, Minigames.JUMP]
+        return [Minigames.DODGE, Minigames.BALANCE]
 
 class Game:
     # se der tempo implementar sensibilidade
