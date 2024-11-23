@@ -1,6 +1,10 @@
 import pygame
 import random
 
+class RectType:
+    RED = 0
+    GREEN = 1
+
 class Obstaculo:
     def __init__(self):
         self.rects = []
@@ -23,8 +27,8 @@ class Obstaculo:
         rect_y = random.randint(y_min, y_max - rect_height)
 
         # Escolher o lado correto (acima ou abaixo do retângulo)
-        side = random.choice(["Esquerda", "Direita"])
-        self.rects.append((pygame.Rect(rect_x, rect_y, rect_width, rect_height), side))
+        rectType = random.choice([RectType.GREEN, RectType.RED])
+        self.rects.append((pygame.Rect(rect_x, rect_y, rect_width, rect_height), rectType))
 
 
     def update(self, arena):
@@ -37,17 +41,18 @@ class Obstaculo:
         
 
     def draw(self, surface):
-        for rect, side in self.rects:
-            color = (0,255,0) if side == "Direita" else (255,0,0)
-            pygame.draw.rect(surface, color, rect)
+        for rect, rectType in self.rects:
+            if rectType == RectType.RED:
+                cor = (255, 0, 0)
+            elif rectType == RectType.GREEN:
+                cor = (0, 255, 0)
+            pygame.draw.rect(surface, cor, rect)
 
-    def check_collision(self, ball_x, ball_y):
-        for rect, side in self.rects:
-            if side == "left" and ball_x < rect.right:
-                return False  # A bola está no lado errado
-            elif side == "right" and ball_x > rect.left:
-                return False  # A bola está no lado errado
-        return True
+    def check_collision(self, player):
+        for rect, rectType in self.rects:
+            if player.colliderect(rect):
+                return rectType
+        return None
     
     def draw_time_bar(self, surface, start_ticks, total_time, x, y, width, height ):
     # Calcular o tempo restante
