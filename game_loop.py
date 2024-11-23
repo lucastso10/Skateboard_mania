@@ -46,18 +46,18 @@ class GameLoop:
             QuadradoComBola.inputHandle(self.jogador,keys)
 
             self.obstaculos.update(self.jogador)
-            
             self.screen.fill((0,0,0))
             QuadradoComBola.draw(self.jogador, self.screen)
-            self.obstaculos.draw(self.screen)
-            #QuadradoComBola.update(self.jogador, self.screen)
+            self.obstaculos.draw(self.screen, self.jogador)
+            
+            #self.obstaculos.draw_time_bar(self.screen, start_ticks, self.obstaculos.frequencia, 50, 20, self.size, 10)
 
             # if self.menu_type != MenuType.NONE:
             #     self.menu.update(self, self.menu_type)
             # else:
             #     self.game.update(self)
 
-            self.obstaculos.draw_time_bar(self.screen, start_ticks, total_time, 50, 20, self.size, 10)
+            
 
             pygame.display.flip()
             self.clock.tick(60)

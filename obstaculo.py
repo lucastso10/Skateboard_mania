@@ -22,23 +22,23 @@ class Obstaculo:
         rect_x = random.randint(x_min, x_max - rect_width)
         rect_y = random.randint(y_min, y_max - rect_height)
 
-        # Escolher o lado correto (acima ou abaixo do retângulo)
-        side = random.choice(["Esquerda", "Direita"])
-        self.rects.append((pygame.Rect(rect_x, rect_y, rect_width, rect_height), side))
-
+        self.rects.append((pygame.Rect(rect_x, rect_y, rect_width, rect_height)))
 
     def update(self, arena):
         # Adiciona novos retângulos periodicamente
         now = pygame.time.get_ticks()
         if now - self.ultimoRect > self.frequencia:
+            # Remove o último retângulo, se houver algum
+            if self.rects:
+                self.rects.pop(-1)  # Remove o último retângulo da lista
+            # Cria e adiciona um novo retângulo
             self.spawn(arena)
             self.ultimoRect = now
 
-        
-
-    def draw(self, surface):
-        for rect, side in self.rects:
-            color = (0,255,0) if side == "Direita" else (255,0,0)
+    def draw(self, surface, arena):
+        self.draw_time_bar(surface, self.ultimoRect, self.frequencia, arena.arena.x, 20, 300, 10)
+        for rect in self.rects:
+            color = (0,255,0)
             pygame.draw.rect(surface, color, rect)
 
     def check_collision(self, ball_x, ball_y):
@@ -49,8 +49,9 @@ class Obstaculo:
                 return False  # A bola está no lado errado
         return True
     
-    def draw_time_bar(self, surface, start_ticks, total_time, x, y, width, height ):
+    def draw_time_bar(self, surface, start_ticks, total_time, x, y, width, height):
     # Calcular o tempo restante
+
         elapsed_time = pygame.time.get_ticks() - start_ticks
         remaining_time = max(0, total_time - elapsed_time)  # Garantir que o tempo não fique negativo
         progress = remaining_time / total_time  # Proporção de tempo restante

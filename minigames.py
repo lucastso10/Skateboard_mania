@@ -20,7 +20,6 @@ class QuadradoComBola:
         
 
     def moverPlayer(self, vel_x, vel_y):
-        print(f"{self.arena.left} | {self.player.left}")
         if vel_x < 0:
             if not self.player.left <= self.arena.left:
                 self.player = self.player.move(vel_x, 0)
