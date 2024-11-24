@@ -1,49 +1,51 @@
 import pygame
 import random
-
-class RectType:
-    RED = 0
-    GREEN = 1
+from macros import RectType, MinigameTypes
 
 class Obstaculo:
-    def __init__(self):
+    def __init__(self, currentMinigame, arena):
         self.rects = []
-        self.timer = 0
-        self.frequencia = 2000
-        self.ultimoRect = pygame.time.get_ticks()
-        self.lifespan = 3000
+        self.currentMinigame = currentMinigame
+
+        self.width = 5
+        self.height = arena.height
+        self.y = arena.top
+
+        self.spawn(arena)
     
     def spawn(self, arena):
-        #limites da arena
-        x_min, y_min = arena.arena.x, arena.arena.y
-        x_max, y_max = arena.arena.x + arena.arena.size[0], arena.arena.y + arena.arena.size[1]
+        match self.currentMinigame:
 
-        # Tamanho do retângulo
-        rect_width = 10
-        rect_height = arena.arena.size[1]
+            case MinigameTypes.EQUILIBRAR:
+                rect1 = pygame.Rect(arena.centerx - 60, arena.top, 10, arena.height)
+                rect2 = pygame.Rect(arena.centerx + 60, arena.top, 10, arena.height)
+                self.rects.append((rect1, RectType.RED))
+                self.rects.append((rect2, RectType.RED))
 
-        # Posição aleatória dentro da arena
-        rect_x = random.randint(x_min, x_max - rect_width)
-        rect_y = random.randint(y_min, y_max - rect_height)
+            case MinigameTypes.MOVER_DIREITA:
+                rect1 = pygame.Rect(arena.centerx - 90, arena.top, 10, arena.height)
+                rect2 = pygame.Rect(arena.centerx + 90, arena.top, 10, arena.height)
+                self.rects.append((rect1, RectType.RED))
+                self.rects.append((rect2, RectType.GREEN))
 
-        # Escolher o lado correto (acima ou abaixo do retângulo)
-        rectType = random.choice([RectType.GREEN, RectType.RED])
-        self.rects.append((pygame.Rect(rect_x, rect_y, rect_width, rect_height), rectType))
+            case MinigameTypes.MOVER_ESQUERDA:
+                rect1 = pygame.Rect(arena.centerx - 90, arena.top, 10, arena.height)
+                rect2 = pygame.Rect(arena.centerx + 90, arena.top, 10, arena.height)
+                self.rects.append((rect1, RectType.GREEN))
+                self.rects.append((rect2, RectType.RED))
 
+            case MinigameTypes.MOVER_CIMA:
+                rect1 = pygame.Rect(arena.left, arena.centery - 90, arena.width, 10)
+                rect2 = pygame.Rect(arena.left, arena.centery + 90, arena.width, 10)
+                self.rects.append((rect1, RectType.GREEN))
+                self.rects.append((rect2, RectType.RED))
 
-    def update(self, arena):
-        # Adiciona novos retângulos periodicamente
-        now = pygame.time.get_ticks()
-        if now - self.ultimoRect > self.frequencia:
-            # Remove o último retângulo, se houver algum
-            if self.rects:
-                self.rects.pop(-1)  # Remove o último retângulo da lista
-            # Cria e adiciona um novo retângulo
-            self.spawn(arena)
-            self.ultimoRect = now
-
+            case MinigameTypes.MOVER_BAIXO:
+                rect1 = pygame.Rect(arena.left, arena.centery - 90, arena.width, 10)
+                rect2 = pygame.Rect(arena.left, arena.centery + 90, arena.width, 10)
+                self.rects.append((rect1, RectType.RED))
+                self.rects.append((rect2, RectType.GREEN))
     def draw(self, surface, arena):
-        self.draw_time_bar(surface, self.ultimoRect, self.frequencia, arena.arena.x, 20, 300, 10)
         for rect, rectType in self.rects:
             if rectType == RectType.RED:
                 cor = (255, 0, 0)
@@ -57,16 +59,3 @@ class Obstaculo:
                 return rectType
         return None
     
-    def draw_time_bar(self, surface, start_ticks, total_time, x, y, width, height):
-        # Calcular o tempo restante
-
-        elapsed_time = pygame.time.get_ticks() - start_ticks
-        remaining_time = max(0, total_time - elapsed_time)  # Garantir que o tempo não fique negativo
-        progress = remaining_time / total_time  # Proporção de tempo restante
-
-        # Calcular a largura da barra de tempo
-        bar_width = width * progress
-
-        # Desenhar a barra de tempo
-        pygame.draw.rect(surface, (0,0,0), (x, y, width, height))  # Fundo da barra (preta)
-        pygame.draw.rect(surface, (0,0,255), (x, y, bar_width, height))  # Barra de progresso

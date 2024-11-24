@@ -1,14 +1,4 @@
 
-class MenuType:
-    NONE = 0
-    START = 1
-    OPTIONS = 2
-
-class Button:
-    PLAY = 0
-    OPTIONS = 1
-    QUIT = 2
-
 class Menu:
     def __init__(self):
         pass

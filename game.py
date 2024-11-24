@@ -2,7 +2,6 @@ import pygame
 import random
 from pygame.locals import *
 
-
 class Game:
     # se der tempo implementar sensibilidade
     def __init__(self):

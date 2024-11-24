@@ -1,36 +1,6 @@
 import pygame
-from obstaculo import Obstaculo, RectType
-
-class MinigameState:
-    RUNNING = 0
-    LOST = 1
-    WON = 2
-
-# o tempo vai ser dividido por esse valor
-class Difficulty:
-    HARD = 1.6
-    MEDIUM = 1.4
-    EASY = 1.2
-
-# Adicionar todos os minigames aqui
-class MinigameTypes:
-    MOVER_DIREITA = 0
-    MOVER_ESQUERDA = 0
-    MOVER_CIMA = 0
-    MOVER_BAIXO = 0
-    EQUILIBRAR = 1
-
-    def all():
-        return [MinigameTypes.MOVER_CIMA, MinigameTypes.MOVER_BAIXO, MinigameTypes.MOVER_DIREITA, MinigameTypes.MOVER_ESQUERDA, MinigameTypes.EQUILIBRAR]
-
-class Modificadores:
-    RAPIDO = 0
-    DEVAGAR = 1
-    CUIDADOSAMENTE = 2
-    NEGATIVO = 3
-
-    def all():
-        return [Modificadores.RAPIDO, Modificadores.DEVAGAR, Modificadores.CUIDADOSAMENTE, Modificadores.NEGATIVO]
+from obstaculo import Obstaculo
+from macros import RectType, MinigameState, MinigameTypes, Modificadores
 
 class Minigame:
     def __init__(self, game):
@@ -49,11 +19,19 @@ class Minigame:
         self.currentMinigame = game.currentMinigame
         self.modificador = game.currentModificador
 
-        self.obstaculo = Obstaculo()
+        self.obstaculo = Obstaculo(game.currentMinigame, self.arena)
 
         self.ended = False
 
         self.state = MinigameState.RUNNING
+
+        self.start = pygame.time.get_ticks()
+        if self.modificador == Modificadores.RAPIDO:
+            self.duration = 2000 // (((game.minigameCount / 100) * game.difficulty) + 1) * 2
+        else:
+            self.duration = 2000 // (((game.minigameCount / 100) * game.difficulty) + 1)
+
+        self.fonte = pygame.font.SysFont("Arial", 20)
 
     def draw(self, surface):
         pygame.draw.rect(surface, (128,128,128), self.arena) # desenha arena
@@ -89,18 +67,67 @@ class Minigame:
         self.moverPlayer(vel_x,vel_y)
 
     def run(self, screen, keys):
+        self.elapsed_time = pygame.time.get_ticks() - self.start
+        self.draw_time_bar(screen)
         self.inputHandle(keys)
 
-        self.obstaculo.update(self)
         self.draw(screen)
         self.obstaculo.draw(screen, self)
-        
+
+        self.win_condition()
+
+    def win_condition(self):
         colisao = self.obstaculo.check_collision(self.player) 
-        if colisao != None:
-            self.ended = True
+        if colisao:
             if colisao == RectType.RED:
-                self.state = MinigameState.LOST
+                if not self.modificador == Modificadores.NEGATIVO:
+                    self.state = MinigameState.LOST
+                else:
+                    self.state = MinigameState.WON
             elif colisao == RectType.GREEN:
+                if not self.modificador == Modificadores.NEGATIVO:
+                    if self.modificador == Modificadores.DEVAGAR:
+                        if self.elapsed_time <= self.duration // 2:
+                            self.state = MinigameState.WON
+                        else:
+                            self.state = MinigameState.LOST
+                    else:
+                        self.state = MinigameState.WON
+                else:
+                    self.state = MinigameState.LOST
+
+
+        if self.elapsed_time >= self.duration:
+            if self.currentMinigame == MinigameTypes.EQUILIBRAR:
                 self.state = MinigameState.WON
+
+    def draw_time_bar(self, surface):
+        width = 300
+        height = 10
+
+        x = self.arena.centerx - width // 2
+        y = 50
+
+        texto = self.fonte.render("Tempo restante!", True, (255, 255, 255))
+
+        width_texto, height_texto = texto.get_size()
+
+        surface.blit(texto, (
+            self.arena.centerx - (width_texto // 2),
+            10
+            ))
+
+        # Calcular o tempo restante
+        remaining_time = max(0, self.duration - self.elapsed_time)
+        progress = remaining_time / self.duration # Proporção de tempo restante
+
+        # Calcular a largura da barra de tempo
+        bar_width = width * progress
+
+        # Desenhar a barra de tempo
+        pygame.draw.rect(surface, (0,0,0), (x, y, width, height))  # Fundo da barra (preta)
+        pygame.draw.rect(surface, (0,0,255), (x, y, bar_width, height))  # Barra de progresso
+        if self.modificador == Modificadores.DEVAGAR:
+            pygame.draw.rect(surface, (255,0,0), (x + (width // 2) - 1 , y, 2, 10))
 
 
