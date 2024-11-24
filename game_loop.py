@@ -1,8 +1,8 @@
 import pygame
+import random
 from pygame.locals import *
 from menu import Menu, MenuType
-from game import Game, Difficulty, Minigames
-from minigames import QuadradoComBola
+from minigames import Minigame, MinigameState, Difficulty, MinigameTypes, Modificadores
 from obstaculo import Obstaculo
 
 
@@ -18,18 +18,15 @@ class GameLoop:
         self.running = True
 
         self.menu_type = MenuType.START
-        self.minigame = Minigames.DODGE
         self.difficulty = Difficulty.EASY
+        self.pick_minigame()
 
-        self.game = Game()
         self.menu = Menu()
-        self.jogador = QuadradoComBola(self.minigame, self.difficulty, 
-                                         (self.screen_width // 2) - (self.size // 2),   #posição x
-                                         (self.screen_height // 2) - (self.size // 2),  #posição y
-                                         self.size) #tamanho quadrado
+        self.lifes = 3
+        self.minigame = Minigame(self)
         
-        self.obstaculos = Obstaculo()
         self.clock = pygame.time.Clock()
+
 
     def run(self):
         start_ticks = pygame.time.get_ticks()
@@ -40,26 +37,20 @@ class GameLoop:
                 if event.type == QUIT:
                     self.running = False
 
-                    
-            
-            keys = pygame.key.get_pressed()
-            QuadradoComBola.inputHandle(self.jogador,keys)
-
-            self.obstaculos.update(self.jogador)
             self.screen.fill((0,0,0))
-            QuadradoComBola.draw(self.jogador, self.screen)
-            self.obstaculos.draw(self.screen, self.jogador)
-            
-            #self.obstaculos.draw_time_bar(self.screen, start_ticks, self.obstaculos.frequencia, 50, 20, self.size, 10)
 
-            # if self.menu_type != MenuType.NONE:
-            #     self.menu.update(self, self.menu_type)
-            # else:
-            #     self.game.update(self)
+            keys = pygame.key.get_pressed()
+            self.minigame.run(self.screen, keys)
 
-            
-
-            print(self.obstaculos.check_collision(self.jogador.player))
+            if self.minigame.state != MinigameState.RUNNING:
+                if self.minigame.state == MinigameState.LOST:
+                    self.lifes -= 1
+                self.pick_minigame()
+                self.minigame = Minigame(self)
 
             pygame.display.flip()
             self.clock.tick(60)
+
+    def pick_minigame(self):
+        self.currentModificador = random.choice(Modificadores.all())
+        self.currentMinigame = random.choice(MinigameTypes.all())

@@ -2,19 +2,6 @@ import pygame
 import random
 from pygame.locals import *
 
-# o tempo vai ser dividido por esse valor
-class Difficulty:
-    HARD = 1.6
-    MEDIUM = 1.4
-    EASY = 1.2
-
-# Adicionar todos os minigames aqui
-class Minigames:
-    DODGE = 0
-    BALANCE = 1
-
-    def all():
-        return [Minigames.DODGE, Minigames.BALANCE]
 
 class Game:
     # se der tempo implementar sensibilidade

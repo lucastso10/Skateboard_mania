@@ -58,7 +58,7 @@ class Obstaculo:
         return None
     
     def draw_time_bar(self, surface, start_ticks, total_time, x, y, width, height):
-    # Calcular o tempo restante
+        # Calcular o tempo restante
 
         elapsed_time = pygame.time.get_ticks() - start_ticks
         remaining_time = max(0, total_time - elapsed_time)  # Garantir que o tempo não fique negativo
