@@ -1,44 +1,26 @@
 import pygame
 import random
 from pygame.locals import *
+from game_loop import GameLoop
+from menu import Menu
 
 class Game:
     # se der tempo implementar sensibilidade
     def __init__(self):
-        self.minigames = Minigames.all()
-        self.difficulty = Difficulty.MEDIUM
+        self.screen_width = 900
+        self.screen_height = 600
+        self.size = 300     #tamanho quadrado
 
-        # sempre começar no primeiro minigame
-        self.current_minigame = self.minigames[0]
+        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
+        pygame.display.set_caption("Skateboard Mania!")
 
-        self.clock = pygame.time.Clock()
-
-        self.game_sprites = pygame.sprite.Group()
-
-        # pode aumentar dps
-        self.minigame_time = 10.0
-
-        self.changing_minigame = True
-
-        self.paused = False
-
+        self.menu = Menu(self.screen)
         
-    def initialize_current_minigame(self):
-        # implementar a função config em todos os minigames
-        self.current_minigame = self.current_minigame.config(self.minigame_time)
-
-    def update(self):
-        if self.changing_minigame:
-            self.change_minigame_animation()
-            
-        # implementar a função update em todos os minigames
-        self.current_minigame.update()
-
-        if self.current_minigame.ended():
-            self.minigame_time /= self.difficulty
-            self.current_minigame = random.choice(self.minigames)
-            self.change_minigame_animation()
-
-    def change_minigame_animation(self):
-        self.changing_minigame = False
-        pass
+    def run(self):
+        replay = True
+        cond = True
+        while replay and cond:
+            cond = self.menu.run()
+            if cond:
+                gameLoop = GameLoop(self.screen)
+                replay = gameLoop.run()

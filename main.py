@@ -1,13 +1,13 @@
 import pygame
-from game_loop import GameLoop
+from game import Game
 
 def main():
     pygame.init()
 
-    gameloop = GameLoop()
+    game = Game()
 
-    gameloop.run()
-
+    game.run()
+        
     pygame.quit()
 
 if __name__ == "__main__":

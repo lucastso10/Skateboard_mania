@@ -26,8 +26,12 @@ class Minigame:
         self.state = MinigameState.RUNNING
 
         self.start = pygame.time.get_ticks()
+
+        self.animationDuration = 2000
+        self.isInAnimation = True
+
         if self.modificador == Modificadores.RAPIDO:
-            self.duration = 2000 // (((game.minigameCount / 100) * game.difficulty) + 1) * 2
+            self.duration = 2000 // ((((game.minigameCount / 100) * game.difficulty) + 1) * 2)
         else:
             self.duration = 2000 // (((game.minigameCount / 100) * game.difficulty) + 1)
 
@@ -36,6 +40,45 @@ class Minigame:
     def draw(self, surface):
         pygame.draw.rect(surface, (128,128,128), self.arena) # desenha arena
         pygame.draw.rect(surface, (0,0,255), self.player) # desenha player
+
+    def drawAnimation(self, surface):
+        if self.get_elapsed_time() <= self.animationDuration // 2:
+            texto = self.fonte.render("Minigame:", True, (255, 255, 255))
+            surface.blit(texto, (self.arena.centerx - texto.get_size()[0] // 2, self.arena.centery - 25))
+            match self.currentMinigame:
+                case MinigameTypes.MOVER_CIMA:
+                    texto = self.fonte.render("Mova para cima!", True, (255, 255, 255))
+                    surface.blit(texto, (self.arena.centerx - texto.get_size()[0] // 2, self.arena.centery))
+                case MinigameTypes.MOVER_BAIXO:
+                    texto = self.fonte.render("Mova para baixo!", True, (255, 255, 255))
+                    surface.blit(texto, (self.arena.centerx - texto.get_size()[0] // 2, self.arena.centery))
+                case MinigameTypes.MOVER_DIREITA:
+                    texto = self.fonte.render("Mova para direita!", True, (255, 255, 255))
+                    surface.blit(texto, (self.arena.centerx - texto.get_size()[0] // 2, self.arena.centery))
+                case MinigameTypes.MOVER_ESQUERDA:
+                    texto = self.fonte.render("Mova para esquedar!", True, (255, 255, 255))
+                    surface.blit(texto, (self.arena.centerx - texto.get_size()[0] // 2, self.arena.centery))
+                case MinigameTypes.EQUILIBRAR:
+                    texto = self.fonte.render("Se equilibre!", True, (255, 255, 255))
+                    surface.blit(texto, (self.arena.centerx - texto.get_size()[0] // 2, self.arena.centery))
+
+        elif self.get_elapsed_time() <= self.animationDuration:
+            texto = self.fonte.render("Modificador:", True, (255, 255, 255))
+            surface.blit(texto, (self.arena.centerx - texto.get_size()[0] // 2, self.arena.centery - 25))
+            match self.modificador:
+                case Modificadores.RAPIDO:
+                    texto = self.fonte.render("Rápido!", True, (255, 255, 255))
+                    surface.blit(texto, (self.arena.centerx - texto.get_size()[0] // 2, self.arena.centery))
+                case Modificadores.DEVAGAR:
+                    texto = self.fonte.render("Devagar!", True, (255, 255, 255))
+                    surface.blit(texto, (self.arena.centerx - texto.get_size()[0] // 2, self.arena.centery))
+                case Modificadores.NEGATIVO:
+                    texto = self.fonte.render("Ao contrário!", True, (255, 255, 255))
+                    surface.blit(texto, (self.arena.centerx - texto.get_size()[0] // 2, self.arena.centery))
+        else:
+            self.isInAnimation = False
+            self.start = pygame.time.get_ticks()
+
 
     def moverPlayer(self, vel_x, vel_y):
         if vel_x < 0:
@@ -67,17 +110,22 @@ class Minigame:
         self.moverPlayer(vel_x,vel_y)
 
     def run(self, screen, keys):
-        self.elapsed_time = pygame.time.get_ticks() - self.start
-        self.draw_time_bar(screen)
-        self.inputHandle(keys)
+        if self.isInAnimation:
+            self.drawAnimation(screen)
+        else:
+            self.draw_time_bar(screen)
+            self.inputHandle(keys)
 
-        self.draw(screen)
-        self.obstaculo.draw(screen, self)
+            self.draw(screen)
+            self.obstaculo.draw(screen, self)
 
-        self.win_condition()
+            self.win_condition()
+
+    def get_elapsed_time(self):
+            return pygame.time.get_ticks() - self.start
 
     def win_condition(self):
-        colisao = self.obstaculo.check_collision(self.player) 
+        colisao = self.obstaculo.check_collision(self.player)
         if colisao:
             if colisao == RectType.RED:
                 if not self.modificador == Modificadores.NEGATIVO:
@@ -87,7 +135,7 @@ class Minigame:
             elif colisao == RectType.GREEN:
                 if not self.modificador == Modificadores.NEGATIVO:
                     if self.modificador == Modificadores.DEVAGAR:
-                        if self.elapsed_time <= self.duration // 2:
+                        if self.get_elapsed_time() >= self.duration // 2:
                             self.state = MinigameState.WON
                         else:
                             self.state = MinigameState.LOST
@@ -97,9 +145,11 @@ class Minigame:
                     self.state = MinigameState.LOST
 
 
-        if self.elapsed_time >= self.duration:
+        if self.get_elapsed_time() >= self.duration:
             if self.currentMinigame == MinigameTypes.EQUILIBRAR:
                 self.state = MinigameState.WON
+            else:
+                self.state = MinigameState.LOST
 
     def draw_time_bar(self, surface):
         width = 300
@@ -112,13 +162,16 @@ class Minigame:
 
         width_texto, height_texto = texto.get_size()
 
-        surface.blit(texto, (
+        surface.blit(
+            texto, 
+            (
             self.arena.centerx - (width_texto // 2),
             10
-            ))
+            )
+        )
 
         # Calcular o tempo restante
-        remaining_time = max(0, self.duration - self.elapsed_time)
+        remaining_time = max(0, self.duration - self.get_elapsed_time())
         progress = remaining_time / self.duration # Proporção de tempo restante
 
         # Calcular a largura da barra de tempo
